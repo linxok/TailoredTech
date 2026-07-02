@@ -15,3 +15,24 @@ export interface BreadcrumbEntry {
   id: string | null;
   name: string;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash: string;
+  createdAt: number;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+}
+
+export interface SearchResult {
+  item: DataRoomItem;
+  matchType: 'name' | 'content';
+  snippet?: string;
+  path: BreadcrumbEntry[];
+}

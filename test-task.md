@@ -81,25 +81,3 @@ We ask that you time-box your solution and only attempt the below if you have ti
 1.  Code files (required): A github repo with your code and a README discussing your **design decisions and clear setup instructions\**
 
 2.  Hosted URL: we recommend using Vercel for this
-
-### **Vercel Setup Guide**
-
-You can create a free account on Vercel for hosting your submission.
-
-1.  Sign up for a free account on [<u>Vercel's website</u>](https://vercel.com/) and sign up using your GitHub, GitLab, or Bitbucket account for easy integration.
-
-2.  Link your Git repository: Once logged in, import your Git repository containing your React/Next application.
-
-3.  Deploy your application: Vercel will then build and deploy your application. You'll be provided with a unique URL where your application is live and publicly accessible. Share this URL with your submission
-
-### **React Setup guide**
-
-Here are the steps to set up a React single-page application using a template:
-
-1.  Install npm: npm is a package manager that will allow you to install JavaScript packages that your application may require.
-
-2.  Create a new React application: You can do this by running npx create-react-app app-name in your terminal. Replace "app-name" with the name you want to give to your application.
-
-3.  Navigate to your new application: Use the command cd app-name to go to your application's directory.
-
-4.  Start the application: Run npm start to start the application. Your application should now be running at [<u>http://localhost:3000</u>](http://localhost:3000) in your web browser.
