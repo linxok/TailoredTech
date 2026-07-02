@@ -1,56 +1,95 @@
 # DataRoom MVP
 
-A virtual Data Room SPA for secure document storage and management — built for Acme Corp's acquisition due diligence process.
+<div align="center">
 
-## Live Demo
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?logo=vercel&logoColor=white)
 
-> Deploy to Vercel and add URL here.
+**A virtual Data Room SPA for secure document storage and management.**  
+Built as a take-home project for Acme Corp's acquisition due diligence process.
 
-## Setup
+[**🚀 Live Demo →**](https://tailored-tech-orpin.vercel.app/)
+
+</div>
+
+---
+
+## Overview
+
+DataRoom is a Google Drive-inspired single-page application that lets users organize PDF documents in a nested folder structure. All data is stored locally in the browser using **IndexedDB** — no backend required.
+
+## Features
+
+| | Feature |
+|---|---|
+| 📁 | Create folders and nest them infinitely |
+| ✏️ | Rename folders and files |
+| 🗑️ | Delete folders (recursively) and files |
+| 📤 | Upload PDF files via button or **drag & drop** |
+| 👁️ | View PDFs inline with zoom and page navigation |
+| 🔍 | Search files and folders by name |
+| 🍞 | Breadcrumb navigation with click-to-jump |
+| 🔔 | Toast notifications for every action |
+| 🔁 | Duplicate name auto-resolution — appends `(1)`, `(2)`… |
+| 💾 | Persistent storage — survives page refresh |
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | React 19 + TypeScript |
+| Build tool | Vite 8 |
+| Styling | Tailwind CSS v4 |
+| UI primitives | Radix UI + class-variance-authority |
+| Icons | Lucide React |
+| Storage | IndexedDB via [`idb`](https://github.com/jakearchibald/idb) |
+| PDF viewer | [`react-pdf`](https://github.com/wojtekmaj/react-pdf) (pdf.js) |
+| Hosting | Vercel |
+
+## Getting Started
+
+**Prerequisites:** Node.js 18+
 
 ```bash
+# Install dependencies
 npm install
+
+# Start dev server
 npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
 
-**Build for production:**
 ```bash
+# Production build
 npm run build
+
+# Preview production build locally
+npm run preview
 ```
 
-## Features
+## Usage
 
-- **Folders** — create, nest, rename, delete (recursive)
-- **Files** — upload PDF, view inline, rename, delete
-- **Search** — filter by name within current folder
-- **Drag & drop** — drop a PDF anywhere on the page to upload
-- **Breadcrumb navigation** — full path with click-to-jump
-- **Toast notifications** — feedback for every action
-- **Duplicate name handling** — auto-appends `(1)`, `(2)`, etc.
-- **Persistent storage** — IndexedDB (survives page refresh)
-
-## Tech Stack
-
-| Layer | Choice |
+| Action | How |
 |---|---|
-| Framework | React 19 + TypeScript |
-| Build | Vite 8 |
-| Styling | Tailwind CSS v4 |
-| UI primitives | Radix UI + CVA |
-| Icons | Lucide React |
-| Storage | IndexedDB via `idb` |
-| PDF viewer | `react-pdf` (pdf.js) |
+| Open a folder | Double-click |
+| Open a PDF | Double-click |
+| Rename / Delete | Right-click → context menu |
+| Create folder | Toolbar → **New Folder** |
+| Upload PDF | Toolbar → **Upload PDF**, or drag & drop anywhere |
+| Navigate back | Click any breadcrumb segment |
 
 ## Design Decisions
 
-### Data Model
+### Data Model — Adjacency List
 
 ```ts
 interface DataRoomItem {
-  id: string;          // UUID
-  parentId: string | null;  // null = root
+  id: string;               // UUID v4
+  parentId: string | null;  // null = root level
   name: string;
   type: 'folder' | 'file';
   createdAt: number;
@@ -60,20 +99,25 @@ interface DataRoomItem {
 }
 ```
 
-A flat list with a `parentId` pointer (adjacency list) was chosen over a nested tree because:
+A **flat adjacency list** was chosen over a nested tree object because:
 - O(1) item lookup by ID
-- Efficient subtree queries via `IDBIndex` on `parentId`
-- Simpler recursive delete without deep object traversal
+- Efficient `getChildren()` via `IDBIndex` on `parentId`
+- Recursive delete is clean and depth-independent
+- Easy to extend (move, copy, share) without restructuring
 
-### Storage
+### Storage — Two Separate Stores
 
-Two IndexedDB object stores:
-- `items` — metadata only, indexed by `parentId` for fast `getChildren()`
-- `blobs` — raw `Blob` objects keyed by item ID, kept separate to avoid loading file data on directory listing
+```
+IndexedDB "dataroom-db"
+├── items  — metadata only, indexed by parentId
+└── blobs  — raw Blob objects keyed by item ID
+```
 
-### Duplicate Names
+Blobs are stored separately so directory listing never loads file data into memory.
 
-`resolveUniqueName()` checks existing siblings and appends `(1)`, `(2)`, etc. — applied on both create and rename, so the user never hits a silent collision.
+### Duplicate Name Handling
+
+`resolveUniqueName()` checks all siblings before every create/rename and appends `(1)`, `(2)`, etc. The user never sees a silent collision or an error — the conflict is resolved automatically.
 
 ### Component Architecture
 
@@ -81,42 +125,42 @@ Two IndexedDB object stores:
 App
 ├── Header
 ├── Breadcrumb
-├── Toolbar (search + New Folder + Upload PDF)
+├── Toolbar        — search · New Folder · Upload PDF
 └── FileExplorer
-    ├── FolderCard  (double-click = navigate)
-    ├── FileCard    (double-click = open PDF viewer)
-    └── ContextMenu (right-click → rename / delete)
+    ├── FolderCard      double-click → navigate in
+    ├── FileCard        double-click → open PDF viewer
+    └── ContextMenu     right-click → rename / delete
         ├── RenameDialog
         └── DeleteDialog
-PDFViewer (fullscreen modal, react-pdf)
-ToastContainer
+PDFViewer          — fullscreen modal, zoom, page nav
+ToastContainer     — bottom-right notifications
 ```
 
 ## Project Structure
 
 ```
 src/
-  components/
-    ui/           # button, dialog, input primitives
-    Breadcrumb.tsx
-    ContextMenu.tsx
-    DeleteDialog.tsx
-    FileCard.tsx
-    FileExplorer.tsx
-    FolderCard.tsx
-    PDFViewer.tsx
-    RenameDialog.tsx
-    Toast.tsx
-    Toolbar.tsx
-  db/
-    db.ts         # IDB schema & connection
-    queries.ts    # CRUD operations
-  hooks/
-    useDataRoom.ts
-  lib/
-    utils.ts
-  types/
-    index.ts
-  App.tsx
-  main.tsx
+├── components/
+│   ├── ui/              # Primitive components (Button, Dialog, Input)
+│   ├── Breadcrumb.tsx
+│   ├── ContextMenu.tsx
+│   ├── DeleteDialog.tsx
+│   ├── FileCard.tsx
+│   ├── FileExplorer.tsx
+│   ├── FolderCard.tsx
+│   ├── PDFViewer.tsx
+│   ├── RenameDialog.tsx
+│   ├── Toast.tsx
+│   └── Toolbar.tsx
+├── db/
+│   ├── db.ts            # IDB schema & singleton connection
+│   └── queries.ts       # All CRUD operations
+├── hooks/
+│   └── useDataRoom.ts   # State management & actions
+├── lib/
+│   └── utils.ts         # cn(), formatFileSize(), formatDate()
+├── types/
+│   └── index.ts
+├── App.tsx
+└── main.tsx
 ```
